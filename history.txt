@@ -1,0 +1,190 @@
+    1  git clone https://github.com/CITA/CTA200H.git
+    2  get status
+    3  git status
+    4  /fs/lustre/scratch/wtso
+    5  cd /fs/lustre/scratch/wtso
+    6  1s /fs/lustre/scratch
+    7  1s /fs/lustre/scratch/wtso
+    8  1s
+    9  ls /fs/lustre/scratch
+   10  ls /fs/lustre/scratch/wtso
+   11  find /fs/lustre -maxdepth 3 -type d -name wtso
+   12  /cita/local/bin/passwd
+   13  ssh -D 2400 wtso@shrimp.cita.utoronto.ca
+   14  ssh cosmo2.cita.utoronto.ca
+   15  ssh cosmo7.cita.utoronto.ca
+   16  cd /mnt/scratch-lustre/wtso
+   17  cd
+   18  cd /fs/lustre/scratch/wtso
+   19  cd /fs/lustre/scratch
+   20  git clone https://github.com/CITA/CTA200H.git
+   21  ssh wtso@lobster.cita.utoronto.ca
+   22  cosmo7.cita.utoronto.ca:6
+   23  vncserver
+   24  cd /mnt/scratch-lustre
+   25  ls
+   26  ssh cosmo7.cita.utoronto.ca
+   27  git clone https://github.com/CITA/CTA200H.git
+   28  git add
+   29  CTA200_2026/assigment_1/
+   30  ssh cosmo7.cita.utoronto.ca
+   31  ssh cosmo2.cita.utoronto.ca
+   32  ssh cosmo2
+   33  ssh cosmo1
+   34  ssh cosmo7
+   35  pwd
+   36  mkdir CTA200_2025
+   37  cd CTA200_2025
+   38  mkdir assignment_1
+   39  cd assigment_1
+   40  cd assignment_1
+   41  pwd
+   42  mv CTA200_2025 CTA200_2026
+   43  vi README.md
+   44  pwd
+   45  ~
+   46  recording @a                                           q
+   47  cd ~/CTA200_2025/assignment_1
+   48  pwd
+   49  ls -1
+   50  pwd
+   51  echo "# CTA200 2025" > README.md
+   52  cat README.md
+   53  find /home/murray -name "Hello_world.*" 2>/dev/null
+   54  find / -name "Hello_world.*" 2>/dev/null | head
+   55  ssh cosmo7
+   56  ssh cosmo7
+   57  pwd
+   58  cd ~/CTA200_2025/assignment_1
+   59  pwd
+   60  ls
+   61  ls -1
+   62  find ~/CTA200H -name "Hello_world.*"
+   63  pwd
+   64  git clone https://github.com/CITA/CTA200H.git
+   65  find ~/CTA200H -name "Hello_world.*"
+   66  find /home/murray -name "Hello_world.*" 2>/dev/null
+   67  ssh cosmo2
+   68  ssh cosmo2
+   69  ssh cosmo4
+   70  exit
+   71  ssh -L 3697:localhost:3697 cosmo7
+   72  exit
+   73  module load python/3.10.2
+   74  jupyter notebook --port=3697 --no-browser
+   75  exit
+   76  ssh cosmo7
+   77  exit
+   78  module load python/3.10.2
+   79  jupyter notebook --port=3697 --no-browser
+   80  pwd
+   81  exit
+   82  ssh -L 3697:localhost:3697 cosmo7
+   83  exit
+   84  module load python/3.10.2
+   85  jupyter notebook --port=4000 --no-browser
+   86  exit
+   87  ssh -L 4000:cosmo7:4000 wtso@gw.cita.utoronto.ca
+   88  ssh -L 4000:localhost:4000 cosmo7
+   89  exit
+   90  ssh -L 3697:localhost:3697 cosmo7
+   91  module load python/3.10.2
+   92  jupyter notebook --port=4000 --no-browser
+   93  exit
+   94  ssh -L 4000:localhost:4000 cosmo7
+   95  exit
+   96  module load python/3.10.2
+   97  jupyter notebook --port=4000 --no-browser
+   98  exit
+   99   ssh -L 4000:localhost:4000 cosmo7
+  100  exit
+  101  module load python/3.10.2
+  102  jupyter notebook --port=3697 --no-browser
+  103  jupyter notebook --port=4000 --no-browser
+  104  exit
+  105  module load python/3.10.2
+  106  jupyter notebook --port=3697 --no-browser
+  107  ssh -L 4000:localhost:4000 cosmo7
+  108  /cita/local/bin/passwd
+  109  exit
+  110  ssh cosmo7
+  111  pwd
+  112  cd CTA200_2025
+  113  git init
+  114  pwd
+  115  git add README.md
+  116  ls
+  117  touch README.md
+  118  git add README.md
+  119  git commit -m "Add README"
+  120  git config --global user.name "Wing Kei Wendy Tso"
+  121  git config --global user.email "wendy.tso@mail.utoronto.ca"
+  122  git commit --amend --reset-author
+  123  exit
+  124  ssh cosmo7
+  125  exit
+  126  ssh -L 4000:localhost:4000 cosmo7
+  127  module load python/3.10.2
+  128  jupyter notebook --port=4000 --no-browser
+  129  ssh cosmo7
+  130  cd CTA200_2025
+  131  ls
+  132  git status
+  133  git add.
+  134  git commit -m "Add assignment files"
+  135  git status
+  136  (wtso@gw.cita.utoronto.ca) Password:
+  137  (wtso@gw.cita.utoronto.ca) Verification code: 298665
+  138  Last login: Wed May  6 12:22:45 2026 from 100.67.216.167
+  139  gw$ ssh cosmo7
+  140  Last login: Wed May  6 12:22:57 2026 from 128.100.76.51
+  141  cosmo7$ cd CTA200_2025
+  142  cosmo7$ ls
+  143  README.md  assignment_1  assignment_2
+  144  cosmo7$ git status
+  145  On branch master
+  146  Untracked files:
+  147    (use "git add <file>..." to include in what will be committed)
+  148          assignment_1/
+  149          assignment_2/
+  150  nothing added to commit but untracked files present (use "git add" to track)
+  151  cosmo7$ git add.
+  152  pwd
+  153  git add .
+  154  git rm --cached -r assignment_1/CTA200H
+  155  rm -rf assignment_1/CTA200H/.git
+  156  git add .
+  157  git commit -m "Add assignment files"
+  158  git status
+  159  git rm --cached assignment_1/CTA200H
+  160  git add assignment_1/CTA200H
+  161  git commit -m "Fix embedded repository"
+  162  git status
+  163  git remote add origin https://github.com/WingKeiWendyTso/CTA200_2025.git
+  164  git push -u origin master
+  165  git status
+  166  pwd
+  167  ls
+  168  pwd
+  169  cd /fs/lustre/scratch/wtso
+  170  cd /fs/lustre/scratch/wtso
+  171  cd /fs/lustre/scratch/wtso/CTA200_2025/assignment_1
+  172  pwd
+  173  ls
+  174  mv Hello_world.c Hello_world_Tso.c
+  175  mv Hello_world.py Hello_world_Tso.py
+  176  ls
+  177  module load gcc
+  178  gcc Hello_world_Tso.c -o Hello_world.x
+  179  ./Hello_world.x
+  180  python3 Hello_world_Tso.py
+  181  vi Hello_world_Tso.c
+  182  cat Hello_world_Tso.c
+  183  gcc Hello_world_Tso.c -o Hello_world.x
+  184  ./Hello_world.x
+  185  cat Hello_world_Tso.py
+  186  vi Hello_world_Tso.py
+  187  python3 Hello_world_Tso.py
+  188  ./Hello_world.x > output_c.txt
+  189  python3 Hello_world_Tso.py > output_python.txt
+  190  history > history.txt
