@@ -223,14 +223,20 @@ The estimator is unbiased but has finite variance due to noise.
 
 \subsubsection{Higher-Dimensional Polynomial Fitting}
 
-We consider:
+We consider a noisy two-dimensional polynomial model of the form
 \[
 z = \left(\sum_{i=1}^{N} a_i x^i\right)\left(\sum_{j=1}^{M} b_j y^j\right) + n.
 \]
 
 This model is bilinear since parameters appear as products.
 
-Rewriting:
+Equivalently, it can be expressed as a coupled 2D polynomial expansion:
+\[
+z = \sum_{k=0}^{N} a_k x^k y^{N-k} + n,
+\]
+which enforces a fixed total polynomial order across both variables.
+
+Rewriting in fully expanded form:
 \[
 z = \sum_{i=1}^N \sum_{j=1}^M \theta_{ij} x^i y^j.
 \]
@@ -276,72 +282,140 @@ R(x,y) = z_{\mathrm{data}} - z_{\mathrm{fit}}.
 
 \subsubsection{Nonlinear Least Squares: Power Law}
 
-We minimize:
+We minimize the weighted chi-squared function
 \[
-\chi^2(S_0, \beta) = \sum_i \frac{[d_i - S_0 (\nu_i/\nu_0)^{-\beta}]^2}{\sigma_i^2}.
+\chi^2(S_0, \beta) = \sum_i \frac{\left[d_i - S_0 \left(\frac{\nu_i}{\nu_0}\right)^{-\beta}\right]^2}{\sigma_i^2}.
 \]
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{nonlinear_powerlaw_fit.pdf}
+    \caption{Best-fit nonlinear power-law model compared to observed data.}
+    \label{fig:powerlaw_fit}
 \end{figure}
 
+The reduced chi-squared value for the best-fit model is
 \[
-\chi^2_{\mathrm{red}} = 0.994.
+\chi^2_{\mathrm{red}} = 0.994,
 \]
+indicating an excellent fit consistent with the assumed noise model.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{nonlinear_power_law_residuals.pdf}
+    \caption{Residuals of the nonlinear power-law fit.}
+    \label{fig:powerlaw_residuals}
 \end{figure}
 
 \subsubsection{Nonlinear Sensitivity}
 
+To assess robustness of the nonlinear fit, we investigate sensitivity to noise, initial conditions, and sampling variability.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{nonlinear_chi2_hist.pdf}
+    \caption{Distribution of $\chi^2$ values from repeated fits under noise realizations.}
+    \label{fig:chi2_hist}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{nonlinearbeta_spread_vs_noise.pdf}
+    \caption{Spread in fitted spectral index $\beta$ as a function of noise level.}
+    \label{fig:beta_spread_noise}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{convergence_vs_initial_guess.pdf}
+    \caption{Dependence of nonlinear optimization convergence on initial parameter guesses.}
+    \label{fig:convergence_init}
 \end{figure}
+
 
 \subsubsection{Nonlinear Sine Wave Fitting}
 
+In this section, we consider a nonlinear least-squares problem where the model is a sinusoidal function. Unlike linear regression, the model is nonlinear in both parameters, meaning we cannot construct a design matrix that allows for a closed-form solution.
+
+The signal model is given by
 \[
-m(A,\nu) = A\sin(2\pi \nu t)
+m(A,\nu,t) = A \sin(2\pi \nu t),
 \]
+where $A$ is the amplitude and $\nu$ is the frequency.
+
+We define the objective function as
+\[
+\chi^2(A, \nu) = \sum_i \frac{\left[d_i - A \sin(2\pi \nu t_i)\right]^2}{\sigma^2}.
+\]
+
+Since the model is nonlinear in $\nu$, we minimize $\chi^2$ numerically using gradient-based optimization methods (in this case BFGS from \texttt{scipy.optimize}).
+
+\paragraph{Synthetic data generation}
+We generate synthetic observations using
+\[
+A_0 = 5, \quad \nu_0 = 0.05,
+\]
+and add Gaussian noise with standard deviation $\sigma = 0.5$:
+\[
+d_i = A_0 \sin(2\pi \nu_0 t_i) + \mathcal{N}(0, \sigma^2).
+\]
+
+\paragraph{Optimization procedure}
+We minimize $\chi^2(A,\nu)$ using a gradient-based solver starting from an initial guess close to the true parameters. The optimizer iteratively updates $(A,\nu)$ until convergence is achieved.
+
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{sine_true_vs_noisy.pdf}
+    \caption{True signal and noisy observations.}
 \end{figure}
 
+\paragraph{Goodness of fit}
+We compute the reduced chi-squared statistic:
 \[
-\chi^2_{\mathrm{red}} = 1.105
+\chi^2_{\mathrm{red}} = \frac{1}{N-2} \sum_i \frac{(d_i - m_i)^2}{\sigma^2}.
 \]
+For this realization, we obtain
+\[
+\chi^2_{\mathrm{red}} = 1.105,
+\]
+indicating an acceptable fit consistent with the assumed noise level.
+
+\paragraph{Robustness tests}
+
+To evaluate robustness, we repeat the fitting procedure over many noise realizations. This allows us to examine:
+
+- the distribution of fitted frequencies,
+- the distribution of $\chi^2_{\mathrm{red}}$,
+- and the dependence of parameter uncertainty on noise level.
+
+The results show that:
+\begin{itemize}
+    \item The recovered frequency is unbiased.
+    \item The spread in $\nu$ increases with noise level.
+    \item The reduced $\chi^2$ remains centered around 1 for correctly estimated noise.
+\end{itemize}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{sine_chi2_distribution.pdf}
+    \caption{Distribution of reduced $\chi^2$ over noise realizations.}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{sine_nu_uncertainty.pdf}
+    \caption{Uncertainty in fitted frequency as a function of noise level.}
 \end{figure}
+
+\paragraph{Dependence on initial guess}
+We also test convergence behaviour as a function of initial parameter choice. The number of iterations required for convergence increases as the initial guess moves further from the true solution.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{sine_iterations_vs_init.pdf}
+    \caption{Convergence speed versus initial parameter error.}
 \end{figure}
-
 \subsection{Overall Interpretation}
 
 Across all models, a consistent pattern emerges: reduced chi-squared values remain close to unity when noise is correctly modeled, even when parameter uncertainty is large. This shows that $\chi^2_{\mathrm{red}}$ measures statistical consistency rather than accuracy.
