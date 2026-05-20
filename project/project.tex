@@ -1,0 +1,1446 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{placeins}
+
+\title{CTA200 Project: Optimization and Radio Interferometry Visibilities}
+\author{Wing Kei Wendy Tso}
+\date{May 2026}
+
+\begin{document}
+
+\maketitle
+
+% ==========================================================
+\section{Introduction}
+
+The purpose of the project is to develop a basic understanding of how radio telescope arrays operate. Ongoing interferometric arrays such as CHIME, CHORD, and HERA use radio interferometry to combine signals from multiple antennas in order to study cosmology. This project focuses on foundational techniques relevant to HERA, including calibration methods such as CorrCal. The project is divided into two main parts: (1) Optimization and (2) Visibility analysis.
+
+\FloatBarrier
+
+% ==========================================================
+\section{Part I: Optimization}
+
+\subsection{Overview of Optimization in Calibration Problems}
+
+Calibration problems can be formulated as optimization tasks. Given a set of observed data $\{d_i\}$ and a parametric model $m(\vec{\theta})$, the goal is to determine the parameters $\vec{\theta}$ that minimize a chosen objective function. A common choice is the weighted least-squares (chi-squared) statistic, which measures the discrepancy between data and model.
+
+\subsection{Fit Quality and Chi-Squared Analysis}
+
+\subsubsection{Fitting Procedure}
+
+In this work, model parameters are estimated by fitting theoretical models to noisy synthetic data using optimization techniques. The fitting procedure seeks to minimize the cost function, which quantifies the difference between model predictions and observed data.
+
+For \textbf{linear models}, the optimization reduces to a closed-form matrix solution obtained via linear least-squares. In this case, the model can be written as
+
+\begin{equation}
+\vec{m} = \mathbf{A}\vec{\theta},
+\end{equation}
+
+where $\mathbf{A}$ is the design matrix. The best-fit parameters are then given analytically by
+
+\begin{equation}
+\hat{\theta} = (\mathbf{A}^T \mathbf{N}^{-1} \mathbf{A})^{-1} \mathbf{A}^T \mathbf{N}^{-1} \vec{d}.
+\end{equation}
+
+For \textbf{nonlinear models}, such as sinusoidal or power-law functions in their native form, no closed-form solution exists. Instead, iterative numerical optimization methods such as BFGS or conjugate gradient descent are used. These algorithms begin from an initial guess and iteratively update parameters to reduce the objective function.
+
+Fit quality is evaluated by comparing the optimized model against both the noisy observations and the true underlying signal (available in simulation studies).
+
+To assess statistical consistency, the optimization is repeated over many independent noise realizations.
+
+\subsubsection{Chi-Squared Definition}
+
+The goodness of fit is quantified using the chi-squared statistic:
+
+\begin{equation}
+\chi^2 = \sum_i \frac{(d_i - m_i(\vec{\theta}))^2}{\sigma_i^2},
+\end{equation}
+
+where $d_i$ represents the observed data, $m_i(\vec{\theta})$ is the model prediction, and $\sigma_i^2$ is the variance of the measurement noise.
+
+To normalize for the number of degrees of freedom in the fit, we define the reduced chi-squared:
+
+\begin{equation}
+\chi^2_{\mathrm{red}} = \frac{\chi^2}{N - p},
+\end{equation}
+
+where $N$ is the number of data points and $p$ is the number of fitted parameters.
+
+A value of $\chi^2_{\mathrm{red}} \approx 1$ indicates that the model is statistically consistent with the data and that the noise level has been correctly estimated.
+
+\FloatBarrier
+
+\subsubsection{Noise Dependence}
+
+To investigate the robustness of the fitting procedure, the optimization is repeated for multiple noise realizations and different noise amplitudes. This allows us to study how parameter recovery and goodness-of-fit statistics depend on the signal-to-noise ratio.
+
+In particular, we examine whether the reduced chi-squared remains a reliable indicator of fit quality as the noise level increases. The resulting distributions of fitted parameters and chi-squared values are analyzed to determine the stability of the optimization procedure.
+
+\FloatBarrier
+
+\subsubsection{Initial Guess Sensitivity}
+
+For nonlinear least-squares problems, the optimization outcome can depend strongly on the choice of initial parameter guess. To study this effect, the fitting procedure is repeated using different starting points in parameter space.
+
+The number of iterations required for convergence, recorded via the \texttt{nit} attribute of the optimizer output, is used as a measure of convergence efficiency. We investigate how convergence speed and final fit quality depend on the accuracy of the initial guess.
+
+These results provide insight into the stability and reliability of gradient-based optimization methods in nonlinear calibration problems.
+\FloatBarrier
+% ==========================================================
+
+
+\subsection{Results}
+
+\subsubsection{Linear Least Squares Fitting for Power Law}
+
+As mentioned above, linear least squares fitting applies when the model can be written in linear form,
+\[
+\vec{m} = \mathbf{A}\vec{\theta}.
+\]
+
+To apply this method to a power-law model, we linearize the relation by taking the logarithm:
+
+\[
+\begin{aligned}
+S(\nu) &= S_0 \left(\frac{\nu}{\nu_0}\right)^{-\beta} \\[6pt]
+\ln S(\nu) &= \ln S_0 + \ln \left(\frac{\nu}{\nu_0}\right)^{-\beta} \\[6pt]
+&= \left(\ln S_0 + \beta \ln \nu_0 \right) - \beta \ln \nu.
+\end{aligned}
+\]
+
+We define:
+\[
+y = \ln S(\nu), \quad x = \ln \nu, \quad a = \ln S_0 + \beta \ln \nu_0, \quad b = -\beta.
+\]
+
+After transformation, the model becomes linear in $(a,b)$ and can be solved using standard least squares.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{power_law_noisy_data.pdf}
+    \caption{Simulated power-law signal with additive Gaussian noise.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{power_law_loglog.pdf}
+    \caption{Log-log transformation of the noisy power-law data.}
+\end{figure}
+
+\paragraph{Solution}
+
+Assuming uniform weighting, the least-squares solution is:
+\[
+\boldsymbol{\theta} = (A^T A)^{-1} A^T \mathbf{d}.
+\]
+
+\subsubsection{Goodness of Fit}
+
+The fit is evaluated using reduced chi-squared and visual comparison:
+
+\[
+\chi^2 = 307.78, \quad \mathrm{DOF} = 299, \quad \chi^2_{\mathrm{red}} = 1.029.
+\]
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{power_law_fit_only.pdf}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{power_law_fit_vs_true.pdf}
+\end{figure}
+
+\subsubsection{Noise Sensitivity and Parameter Recovery}
+
+To test robustness, the fitting procedure was repeated for multiple noise levels:
+\[
+\sigma_{\mathrm{frac}} = 0.01,\ 0.03,\ 0.05,\ 0.10,\ 0.20.
+\]
+
+For each level, multiple noise realizations were generated:
+\[
+S_{\mathrm{noisy}} = S_{\mathrm{true}}\left(1 + \mathcal{N}(0,\sigma_{\mathrm{frac}})\right).
+\]
+
+Each realization was fitted using least squares in log-space.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.48\linewidth]{fit_example_noise_0.01.pdf}
+    \includegraphics[width=0.48\linewidth]{fit_example_noise_0.03.pdf}
+    \includegraphics[width=0.48\linewidth]{fit_example_noise_0.05.pdf}
+    \includegraphics[width=0.48\linewidth]{fit_example_noise_0.1.pdf}
+    \includegraphics[width=0.48\linewidth]{fit_example_noise_0.2.pdf}
+    \caption{Example fits for increasing noise levels.}
+\end{figure}
+
+The reduced chi-squared remains approximately constant across all noise levels:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{chi2_vs_noise.pdf}
+\end{figure}
+
+However, parameter uncertainty increases significantly:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{beta_uncertainty_vs_noise.pdf}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{s0_uncertainty_vs_noise.pdf}
+\end{figure}
+
+This shows that $\chi^2_{\mathrm{red}}$ reflects statistical consistency rather than parameter accuracy.
+
+\subsubsection{Distribution of Recovered Parameters}
+
+For $N=200$ realizations at fixed 5\% noise:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{chi2_distribution.pdf}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{beta_distribution.pdf}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{s0_distribution.pdf}
+\end{figure}
+
+The estimator is unbiased but has finite variance due to noise.
+
+\subsubsection{Higher-Dimensional Polynomial Fitting}
+
+We consider:
+\[
+z = \left(\sum_{i=1}^{N} a_i x^i\right)\left(\sum_{j=1}^{M} b_j y^j\right) + n.
+\]
+
+This model is bilinear since parameters appear as products.
+
+Rewriting:
+\[
+z = \sum_{i=1}^N \sum_{j=1}^M \theta_{ij} x^i y^j.
+\]
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{noisy_2d_polynomial.pdf}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{2d_polynomial_fit_comparison.pdf}
+\end{figure}
+
+\[
+\chi^2 = 10174.79, \quad \mathrm{DOF} = 9996, \quad \chi^2_{\mathrm{red}} = 1.018.
+\]
+
+\subsubsection{2D Polynomial Consistency}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{2dpoly_chi2_distribution.pdf}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.48\linewidth]{2dpoly_coeff_0_distribution.pdf}
+    \includegraphics[width=0.48\linewidth]{2dpoly_coeff_1_distribution.pdf}
+    \includegraphics[width=0.48\linewidth]{2dpoly_coeff_2_distribution.pdf}
+    \includegraphics[width=0.48\linewidth]{2dpoly_coeff_3_distribution.pdf}
+\end{figure}
+
+Residuals:
+\[
+R(x,y) = z_{\mathrm{data}} - z_{\mathrm{fit}}.
+\]
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{2dpoly_residual_map.pdf}
+\end{figure}
+
+\subsubsection{Nonlinear Least Squares: Power Law}
+
+We minimize:
+\[
+\chi^2(S_0, \beta) = \sum_i \frac{[d_i - S_0 (\nu_i/\nu_0)^{-\beta}]^2}{\sigma_i^2}.
+\]
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{nonlinear_powerlaw_fit.pdf}
+\end{figure}
+
+\[
+\chi^2_{\mathrm{red}} = 0.994.
+\]
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{nonlinear_power_law_residuals.pdf}
+\end{figure}
+
+\subsubsection{Nonlinear Sensitivity}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{nonlinear_chi2_hist.pdf}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{nonlinearbeta_spread_vs_noise.pdf}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{convergence_vs_initial_guess.pdf}
+\end{figure}
+
+\subsubsection{Nonlinear Sine Wave Fitting}
+
+\[
+m(A,\nu) = A\sin(2\pi \nu t)
+\]
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{sine_true_vs_noisy.pdf}
+\end{figure}
+
+\[
+\chi^2_{\mathrm{red}} = 1.105
+\]
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{sine_chi2_distribution.pdf}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{sine_nu_uncertainty.pdf}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{sine_iterations_vs_init.pdf}
+\end{figure}
+
+\subsection{Overall Interpretation}
+
+Across all models, a consistent pattern emerges: reduced chi-squared values remain close to unity when noise is correctly modeled, even when parameter uncertainty is large. This shows that $\chi^2_{\mathrm{red}}$ measures statistical consistency rather than accuracy.
+
+Increasing noise consistently increases parameter variance without introducing strong bias. This behaviour is universal across linear and nonlinear models.
+
+For nonlinear optimization, convergence speed depends strongly on initial parameter guesses. The number of iterations increases as the initial guess deviates further from the true solution, as captured by the \texttt{nit} attribute of \texttt{scipy.optimize.minimize}. This reflects the structure of nonlinear parameter space and the local nature of gradient-based optimization.
+
+Overall, good chi-squared values do not guarantee accurate parameter recovery. Reliable inference requires both goodness-of-fit and explicit uncertainty analysis.
+% ==========================================================
+\section{Part II: Working With Visibilities}
+
+\subsection{Data Overview}
+
+We analyze simulated interferometric data generated using \texttt{hera\_sim} and stored in a \texttt{pyuvdata} \texttt{UVData} object. This object contains both the complex visibility measurements and all associated metadata such as antenna positions, observing times, and frequency channels.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Array_Layout.pdf}
+    \caption{Array layout of the interferometric telescope. Each antenna position defines a baseline pair, which measures complex visibilities sensitive to sky brightness distributions.}
+\end{figure}
+
+\FloatBarrier
+
+\subsection{UVData Object and Measurement Equation}
+
+The interferometric visibility measured by a baseline formed between antennas $i$ and $j$ is given by the measurement equation:
+\begin{equation}
+V_{ij}(\nu,t) = \int A_\nu(\hat{\mathbf{n}})\, I_\nu(\hat{\mathbf{n}},t)\,
+e^{-i2\pi\nu \mathbf{b}_{ij}\cdot \hat{\mathbf{n}}/c}\, d\Omega,
+\end{equation}
+where $\mathbf{b}_{ij}$ is the baseline vector, $A_\nu$ is the primary beam response, and $I_\nu$ is the sky intensity distribution.
+
+In this simulation, the sky consists of a single point source drifting through the primary beam of an Airy-pattern antenna. The source has a flux density scaling as:
+\begin{equation}
+S_\nu = \left(\frac{\nu}{150\,\mathrm{MHz}}\right)^{-2.5}\,\mathrm{Jy}.
+\end{equation}
+
+The source transits through the main beam during a drift scan, allowing us to observe both beam attenuation effects and interferometric fringe evolution.
+
+\subsection{Loading the Data}
+
+The simulated visibility data is loaded using the \texttt{pyuvdata} package:
+
+\begin{verbatim}
+uvdata = UVData.from_file("single_source_example.uvh5")
+\end{verbatim}
+
+The \texttt{UVData.history} attribute confirms that the dataset was generated using \texttt{hera\_sim} with a MatVis simulation pipeline.
+
+\subsection{Data Structure and Axes}
+
+For a single baseline, the visibility data has shape:
+\begin{equation}
+(360,\, 250)
+\end{equation}
+and consists of complex128 numbers.
+
+From the metadata:
+
+\begin{itemize}
+    \item $N_{\mathrm{times}} = 360$
+    \item $N_{\mathrm{freqs}} = 250$
+\end{itemize}
+
+Therefore:
+
+\begin{itemize}
+    \item The \textbf{first axis (rows)} corresponds to \textbf{time (LST / integrations)}.
+    \item The \textbf{second axis (columns)} corresponds to \textbf{frequency channels}.
+\end{itemize}
+
+Thus, the visibility array is structured as:
+\begin{equation}
+V[t, \nu]
+\end{equation}
+
+where each row is a time snapshot across all frequencies.
+
+\subsection{Time and Frequency Coverage}
+
+The observation spans:
+
+\begin{itemize}
+    \item Frequency range: 100--349 MHz
+    \item Time range: 7.37--9.37 LST hours
+    \item Total duration: approximately one beam crossing
+\end{itemize}
+
+This corresponds to a drift scan where the source moves through the primary beam from first null, through boresight, and back to the opposite null.
+
+\subsection{Interpretation of the Simulation}
+
+The combination of spectral dependence and beam response produces a time- and frequency-dependent visibility:
+
+\begin{equation}
+V(\nu,t) \approx A_\nu(t)\, S_\nu\, e^{-i2\pi\nu\tau(t)}.
+\end{equation}
+
+Here:
+\begin{itemize}
+    \item $A_\nu(t)$ encodes the Airy beam response,
+    \item $S_\nu$ encodes the intrinsic spectral index (-2.5),
+    \item $e^{-i2\pi\nu\tau(t)}$ encodes geometric fringe oscillations.
+\end{itemize}
+% ==========================================================
+\subsection{Baselines and Interferometric Measurement}
+
+A two-element interferometer consists of two antennas separated by a baseline vector $\mathbf{b}_{ij} = \mathbf{x}_j - \mathbf{x}_i$. Each baseline measures a correlated signal between the electric fields received at the two antennas.
+
+The fundamental observable is the complex visibility, defined as:
+\begin{equation}
+V_{ij}(\nu,t) =
+\int
+A_\nu(\hat{\mathbf{n}})
+I_\nu(\hat{\mathbf{n}},t)
+e^{-i2\pi\nu \mathbf{b}_{ij}\cdot \hat{\mathbf{n}}/c}
+\, d\Omega.
+\end{equation}
+
+This equation describes how the interferometer samples the sky brightness distribution. The primary beam $A_\nu(\hat{\mathbf{n}})$ weights the sky response of each antenna, while $I_\nu(\hat{\mathbf{n}},t)$ represents the sky intensity distribution. The exponential term encodes the geometric phase delay introduced by the baseline projection onto the sky direction $\hat{\mathbf{n}}$.
+
+In this simulation, the sky model consists of a single point source drifting through the primary beam due to Earth’s rotation (a drift-scan observation). The source has a flux density of 1 Jy at 150 MHz and follows a power-law spectrum:
+
+\begin{equation}
+S_\nu =
+\left(
+\frac{\nu}{150\ {\rm MHz}}
+\right)^{-2.5}
+{\rm Jy}.
+\end{equation}
+
+Since the spectral index is negative, the source is intrinsically brighter at lower frequencies.
+
+The antenna response is modeled as an Airy beam, corresponding to a diffraction-limited circular aperture. As the source moves through the beam pattern, the visibility amplitude varies due to the changing beam gain, while the phase evolves smoothly due to the changing geometric delay.
+
+\textbf{Answer to question:}  
+Since the spectral index is $-2.5$, the source is brighter at \textbf{lower frequencies}.
+\FloatBarrier
+
+
+
+\subsection{Interferometric Visibility Model}
+
+The complex visibility measured by a baseline is given by
+
+\begin{equation}
+V_{ij}(\nu,t) =
+\int
+A_\nu(\hat{\mathbf{n}})
+I_\nu(\hat{\mathbf{n}},t)
+e^{-i2\pi\nu \mathbf{b}_{ij}\cdot \hat{\mathbf{n}}/c}
+\, d\Omega.
+\end{equation}
+
+For a single point source drifting through the primary beam, this reduces to
+
+\begin{equation}
+V(\nu,t) \approx A_\nu(t)\, S_\nu \, e^{-i2\pi\nu \tau(t)},
+\end{equation}
+
+where:
+
+\begin{itemize}
+    \item $A_\nu(t)$ is the frequency-dependent beam response,
+    \item $S_\nu \propto \nu^{-2.5}$ is the source spectrum,
+    \item $\tau(t)$ is the geometric delay of the baseline projection.
+\end{itemize}
+
+This factorized form explains all observed structure in the real, imaginary, amplitude, and phase components of the visibility.
+% ==========================================================
+\subsection{Time-Series Visibility Analysis}
+\subsubsection{Answers to the notebook prompts}
+
+\paragraph{Why does the visibility amplitude change with time?} As Earth rotates, the projected sky direction $\hat{\mathbf{n}}(t)$ moves through the primary beam $A_\nu(\hat{\mathbf{n}})$. The beam has maximal gain near boresight and lower gain in sidelobes, so the correlated amplitude $|V| \simeq A_\nu(t) S_\nu$ rises near transit and falls away from it.
+
+
+\paragraph{Why does oscillation period change with frequency?}
+
+\[
+e^{-i2\pi \nu \frac{\mathbf{b}\cdot \hat{\mathbf{n}}}{c}}
+\]
+
+Higher frequency → faster phase evolution.
+
+\vspace{1em}
+
+\paragraph{Why does real part oscillate?}
+
+Real part follows cosine of geometric phase:
+
+\[
+\mathrm{Re}(V) \propto \cos\left(2\pi \nu \frac{\mathbf{b}\cdot \hat{\mathbf{n}}}{c}\right)
+\]
+
+\vspace{1em}
+
+\textbf{4. Visibility components}
+
+- Amplitude: strength of correlated signal  
+- Imaginary: quadrature component  
+- Phase: geometric delay evolution  
+
+\FloatBarrier
+
+% ==========================================================
+\subsection{Visibility Magnitude}
+
+\subsection{Time-Domain Behaviour}
+
+The time evolution of the interferometric visibility can be understood using the simplified visibility model for a single point source,
+
+\begin{equation}
+V(\nu,t) = A_\nu(t)\, S_\nu\, e^{-i2\pi\nu\tau(t)},
+\end{equation}
+
+where $A_\nu(t)$ is the primary beam response, $S_\nu$ is the intrinsic source spectrum, and $\tau(t)$ is the geometric delay associated with the baseline projection onto the source direction.
+
+Using Euler’s relation,
+
+\begin{equation}
+e^{-i\phi} = \cos\phi - i\sin\phi,
+\end{equation}
+
+the visibility may be written as
+
+\begin{equation}
+V(\nu,t)
+=
+|V|
+\left[
+\cos(2\pi\nu\tau(t))
+-
+i\sin(2\pi\nu\tau(t))
+\right].
+\end{equation}
+
+This decomposition directly explains the behaviour observed in the time-series plots.
+
+\begin{itemize}
+
+\item \textbf{Real Part}
+
+The real component of the visibility is
+
+\begin{equation}
+\mathrm{Re}(V)
+=
+|V|
+\cos(2\pi\nu\tau(t)).
+\end{equation}
+
+The oscillatory structure seen in the real-part time series arises from the cosine fringe term. As the Earth rotates, the projected baseline geometry changes continuously, causing the geometric delay $\tau(t)$ to evolve with time. This produces alternating positive and negative fringes in the measured visibility.
+
+At higher observing frequencies, the phase evolves more rapidly because the fringe term scales with frequency. Consequently, the oscillation period becomes shorter at higher MHz channels.
+
+\item \textbf{Imaginary Part}
+
+The imaginary component is
+
+\begin{equation}
+\mathrm{Im}(V)
+=
+-|V|
+\sin(2\pi\nu\tau(t)).
+\end{equation}
+
+This component represents the quadrature part of the interferometric signal and is phase-shifted by $\pi/2$ relative to the real component. The imaginary visibility therefore oscillates similarly to the real part but reaches maxima and minima at different times.
+
+Together, the real and imaginary parts describe the full complex fringe rotation of the interferometric visibility.
+
+\item \textbf{Visibility Amplitude}
+
+The visibility amplitude is given by
+
+\begin{equation}
+|V|
+=
+A_\nu(t)\, S_\nu.
+\end{equation}
+
+Unlike the real and imaginary parts, the amplitude does not oscillate rapidly because the complex phase term has unit magnitude. Instead, the amplitude varies smoothly with time according to the primary beam response and the intrinsic source brightness.
+
+As the source drifts toward beam center, the beam gain increases and the measured visibility amplitude rises. After transit, the source moves away from boresight and the amplitude decreases again. The source spectrum also contributes a frequency dependence, with larger amplitudes observed at lower frequencies due to the negative spectral index.
+
+\item \textbf{Visibility Phase}
+
+The visibility phase is
+
+\begin{equation}
+\phi(\nu,t)
+=
+\arg(V)
+=
+-2\pi\nu\tau(t).
+\end{equation}
+
+The phase encodes the geometric delay evolution of the interferometer as the source moves across the sky. As the baseline projection changes with Earth rotation, the phase evolves continuously with time.
+
+In wrapped phase plots, the phase is restricted to the interval $[-\pi,\pi]$, producing discontinuous jumps that appear as zig-zag or stripe-like patterns. In unwrapped phase plots, these discontinuities are removed, revealing the smoother large-scale phase evolution associated with the changing geometric delay.
+
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Visibility_time_series.pdf}
+    \caption{Visibility amplitude vs LST.}
+\end{figure}
+
+\FloatBarrier
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{absolute_value_visibility.pdf}
+    \caption{Visibility amplitude vs LST.}
+\end{figure}
+
+\FloatBarrier
+
+\subsection{Imaginary Part}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Imaginary_visibility.pdf}
+    \caption{Imaginary visibility vs LST.}
+\end{figure}
+
+
+
+\FloatBarrier
+
+\subsection{Visibility Phase}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Visibility_phase.pdf}
+    \caption{Phase evolution of visibility.}
+\end{figure}
+
+\FloatBarrier
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Visibility_phase_vs_time.pdf}
+    \caption{Phase evolution of visibility.}
+\end{figure}
+
+\FloatBarrier
+
+% ==========================================================
+\subsection{Frequency-Domain Analysis}
+
+We now examine the behaviour of the complex visibility as a function of frequency for selected LST slices. Each LST slice corresponds to a different stage of the source transit through the primary beam, and therefore a different geometric delay configuration.
+
+At fixed LST, the visibility may be approximated as
+
+\begin{equation}
+V(\nu)
+\approx
+A_\nu\, S_\nu\, e^{-i2\pi\nu\tau},
+\end{equation}
+
+where the beam response $A_\nu$, source spectrum $S_\nu$, and geometric delay $\tau$ together determine the observed frequency structure.
+
+Using Euler’s relation,
+
+\begin{equation}
+e^{-i2\pi\nu\tau}
+=
+\cos(2\pi\nu\tau)
+-
+i\sin(2\pi\nu\tau),
+\end{equation}
+
+the visibility can be separated into real and imaginary components,
+
+\begin{equation}
+\mathrm{Re}(V)
+=
+|V|
+\cos(2\pi\nu\tau),
+\end{equation}
+
+\begin{equation}
+\mathrm{Im}(V)
+=
+-|V|
+\sin(2\pi\nu\tau).
+\end{equation}
+
+These relations explain the behaviour observed in the frequency-domain plots.
+
+\begin{itemize}
+
+\item \textbf{Amplitude vs Frequency}
+
+The visibility amplitude is primarily determined by
+
+\[
+|V| = A_\nu S_\nu.
+\]
+
+Since the simulated source follows a power-law spectrum,
+
+\[
+S_\nu \propto \nu^{-2.5},
+\]
+
+the source is intrinsically brighter at lower frequencies. Consequently, the visibility amplitude generally decreases with increasing frequency.
+
+The Airy beam response also varies with frequency because the beam narrows at higher frequencies. This introduces additional chromatic modulation into the visibility amplitude, particularly away from beam center. As a result, the amplitude spectra exhibit smooth frequency-dependent structure rather than rapid oscillatory fringes.
+
+\item \textbf{Real and Imaginary Components}
+
+The real and imaginary parts of the visibility are governed by the cosine and sine fringe terms produced by the interferometric phase factor. As frequency increases, the phase rotates more rapidly, producing oscillatory behaviour across the band.
+
+These oscillations arise because increasing frequency changes the effective interferometric path difference measured in wavelengths. The real component oscillates as a cosine fringe pattern, while the imaginary component oscillates as a sine fringe pattern shifted by $\pi/2$.
+
+The fringe rate depends on the geometric delay $\tau$, so different LST slices produce different oscillation patterns across frequency.
+
+\item \textbf{Phase vs Frequency}
+
+The visibility phase is approximately
+
+\begin{equation}
+\phi(\nu)
+=
+-2\pi\nu\tau.
+\end{equation}
+
+For an ideal single point source with constant geometric delay, this predicts an approximately linear phase dependence on frequency. The slope of the phase spectrum is determined by the effective delay $\tau$ associated with the baseline geometry at a given LST.
+
+In the simulation, however, the observed phase is not perfectly linear and may exhibit curvature. This occurs because the Airy beam response is chromatic, meaning that the effective beam weighting changes with frequency. Across the wide observing bandwidth, the effective delay becomes weakly frequency dependent, introducing deviations from a perfectly linear phase spectrum.
+
+When the source is near beam center, the effective delay approaches zero and the phase spectrum becomes nearly flat. Away from transit, the phase develops steeper positive or negative slopes depending on the baseline projection onto the source direction.
+
+\end{itemize}
+
+\subsection{Connecting Time-Domain and Frequency-Domain Behaviour}
+
+\textbf{Question:}  
+Does the frequency-domain behaviour of the real visibility at fixed LST agree with what is seen in the time-domain plots at fixed frequency? How can we interpret differences between the two representations in terms of the source position within the primary beam?
+
+\vspace{1em}
+
+\textbf{Answer:}
+
+The time-domain and frequency-domain plots are consistent with the same underlying visibility model:
+\[
+V(\nu,t) = A(t)\,S(\nu)\,e^{-i2\pi\nu\tau(t)}.
+\]
+
+However, they emphasize different physical effects.
+
+\vspace{0.5em}
+\textbf{1. Time-domain (fixed frequency):}
+
+At a fixed frequency channel, the visibility varies with time because the geometric delay $\tau(t)$ changes as the source moves through the primary beam due to Earth’s rotation. This produces the observed oscillatory “fringe” pattern in $\mathrm{Re}(V)$.
+
+The envelope of these oscillations is set by the beam response $A(t)$:
+\begin{itemize}
+    \item Near beam center: $A(t)$ is large → strong visibility amplitude.
+    \item Near beam edges: $A(t)$ is small → suppressed signal.
+\end{itemize}
+
+Lower frequencies show slower oscillations in time because the phase term scales with $\nu$.
+
+\vspace{0.5em}
+\textbf{2. Frequency-domain (fixed time):}
+
+At fixed LST, the same fringe term produces oscillations across frequency:
+\[
+\mathrm{Re}(V) \propto A(t)\,S(\nu)\cos(2\pi\nu\tau(t)).
+\]
+
+Here the structure is additionally modulated by:
+\begin{itemize}
+    \item The intrinsic source spectrum $S(\nu) \propto \nu^{-2.5}$ (stronger at low frequencies),
+    \item The chromatic Airy beam response, which introduces smooth frequency-dependent weighting.
+\end{itemize}
+
+As a result, frequency slices do not always show clean oscillations; instead, they can appear smooth or asymmetric depending on where the source sits in the beam.
+
+\vspace{0.5em}
+\textbf{Interpretation in terms of beam position:}
+
+The differences between the two views are explained by the source location in the primary beam:
+\begin{itemize}
+    \item \textbf{Near beam center:} symmetric beam gain → cleaner but slower-varying structure.
+    \item \textbf{Entering/exiting beam:} strong beam gradient → asymmetric envelopes and stronger apparent variation.
+    \item \textbf{Near beam nulls:} low signal → visibility becomes smooth and noise-dominated-looking.
+\end{itemize}
+
+\vspace{0.5em}
+\textbf{Conclusion:}
+
+There is no contradiction between the two representations. The time-domain plots emphasize the \emph{evolution of delay with time}, while the frequency-domain plots emphasize the \emph{interaction between delay, beam chromaticity, and source spectrum at a fixed instant}. The apparent differences arise primarily from the changing position of the source within the primary beam during the observation.
+
+\subsection{Imaginary Part}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Vis_Imag_Frequency.pdf}
+    \caption{Imaginary part of the visibility as a function of frequency for selected LST values. Oscillations arise from the frequency-dependent interferometric fringe term.}
+\end{figure}
+
+\FloatBarrier
+
+\subsection{Visibility Phase}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Vis_Phase_Frequency.pdf}
+    \caption{Unwrapped visibility phase as a function of frequency for selected LST values. The approximately linear dependence reflects the geometric delay term in the measurement equation.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Vis_Phase_Frequency_Wrapped.pdf}
+    \caption{wrapped visibility phase as a function of frequency for selected LST values. The approximately linear dependence reflects the geometric delay term in the measurement equation.}
+\end{figure}
+
+\FloatBarrier
+
+% ==========================================================
+\subsection{Waterfall Plots Analysis}
+
+The waterfall plots visualize the visibility as a function of both frequency and time simultaneously. These plots provide a two-dimensional representation of the interferometric response, allowing the evolution of fringe structure, beam attenuation, and phase behaviour to be examined across the full observation.
+
+Using the simplified visibility model,
+
+\begin{equation}
+V(\nu,t)
+=
+A_\nu(t)\, S_\nu\, e^{-i2\pi\nu\tau(t)},
+\end{equation}
+
+the observed waterfall structure can be interpreted as the combined effect of the beam response, source spectrum, and geometric fringe phase.
+
+\begin{itemize}
+
+\item \textbf{Real and Imaginary Waterfalls}
+
+The real and imaginary waterfall plots exhibit oscillatory fringe patterns arising from the interferometric phase term,
+
+\[
+e^{-i2\pi\nu\tau(t)}.
+\]
+
+As both frequency and LST vary, the geometric delay $\tau(t)$ changes continuously due to Earth rotation. This produces alternating positive and negative fringe structures visible as oscillatory bands across the waterfall images.
+
+The real component follows a cosine fringe pattern,
+
+\[
+\mathrm{Re}(V)
+=
+|V|
+\cos(2\pi\nu\tau),
+\]
+
+while the imaginary component follows the corresponding sine fringe pattern,
+
+\[
+\mathrm{Im}(V)
+=
+-|V|
+\sin(2\pi\nu\tau).
+\]
+
+The fringe spacing changes with frequency because higher frequencies correspond to more rapid phase evolution.
+
+\item \textbf{Amplitude Waterfall}
+
+The amplitude waterfall represents the magnitude of the complex visibility,
+
+\[
+|V|
+=
+A_\nu(t)\, S_\nu.
+\]
+
+Unlike the real and imaginary components, the amplitude does not contain oscillatory sign changes because the complex exponential contributes only a phase rotation with unit magnitude.
+
+The dominant behaviour is instead controlled by the intrinsic source spectrum and the primary beam response. Since the source follows a power-law spectrum,
+
+\[
+S_\nu \propto \nu^{-2.5},
+\]
+
+the visibility amplitude is strongest at lower frequencies and generally decreases toward higher frequencies.
+
+The Airy beam response further modulates the amplitude with time as the source drifts through the beam. Near beam center, the visibility amplitude is large, while near the beam edges and sidelobes the amplitude decreases significantly. This produces the smooth large-scale variation seen across the waterfall image.
+
+\item \textbf{Phase Waterfall}
+
+The phase waterfall displays the interferometric phase,
+
+\[
+\phi(\nu,t)
+=
+-2\pi\nu\tau(t).
+\]
+
+The phase structure evolves continuously with both frequency and time because the geometric delay changes as the source moves across the sky relative to the baseline.
+
+In an idealized monochromatic point-source model, the phase would vary linearly with frequency. However, the observed phase structure exhibits curvature and complex wrapping patterns due to several physical effects present in the simulation.
+
+First, the Airy beam is chromatic, meaning that the effective beam weighting changes with frequency. Second, the large observing bandwidth causes the baseline measured in wavelengths to vary significantly across the band. Together, these effects introduce a weak frequency dependence in the effective geometric delay, producing departures from perfectly linear phase evolution.
+
+Because the phase is wrapped into the interval $[-\pi,\pi]$, the waterfall also displays discontinuous jumps and stripe-like patterns corresponding to phase wrapping.
+
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Waterfall_ReV.pdf}
+    \caption{Real part waterfall.}
+\end{figure}
+
+\FloatBarrier
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Waterfall_Amplitude.pdf}
+    \caption{Amplitude waterfall.}
+\end{figure}
+
+\FloatBarrier
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Waterfall_Imaginary.pdf}
+    \caption{Imaginary waterfall.}
+\end{figure}
+
+\FloatBarrier
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Waterfall_Phase.pdf}
+    \caption{Phase waterfall.}
+\end{figure}
+
+\FloatBarrier
+
+% ==========================================================
+\section{Part III: Baseline Comparison}
+
+There are six baselines in the array:
+\[
+(0,1),\ (0,2),\ (0,3),\ (1,2),\ (1,3),\ (2,3).
+\]
+
+Certain pairs of baselines are expected to produce similar visibilities because they have similar lengths and orientations. In particular:
+
+\begin{itemize}
+    \item $(0,1)$ and $(2,3)$ are symmetric horizontal baselines,
+    \item $(0,2)$ and $(1,3)$ are symmetric vertical baselines,
+    \item $(0,3)$ and $(1,2)$ are diagonal baselines.
+\end{itemize}
+
+Since interferometric visibilities depend strongly on the projected baseline geometry through the geometric delay term,
+
+\[
+\tau = \frac{\mathbf{b}\cdot\hat{\mathbf{n}}}{c},
+\]
+
+baselines with similar orientations and lengths should exhibit similar fringe patterns and phase evolution.
+
+To avoid redundancy, we focus on baselines $(0,1)$, $(0,2)$, and $(0,3)$, which represent the three distinct baseline geometries in the array.
+
+The visibility behaviour is analyzed in the time domain, frequency domain, and waterfall representations using the real, imaginary, amplitude, and phase components of the complex visibility.
+
+% ==========================================================
+\subsection{Time-Series Visibility Comparison}
+
+At fixed observing frequency, the visibility evolves with time according to
+
+\[
+V(\nu,t) = A_\nu(t)\,S_\nu\,e^{-i2\pi\nu\tau(t)}.
+\]
+
+As Earth rotates, the geometric delay $\tau(t)$ changes continuously, producing oscillatory fringe patterns in the real and imaginary components. Meanwhile, the beam response $A_\nu(t)$ modulates the overall visibility amplitude as the source drifts through the primary beam.
+
+% ==========================================================
+\subsubsection{Real Component vs LST}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{re_time_0_1.pdf}
+    \caption{Real visibility vs LST for baseline (0,1).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{re_time_0_2.pdf}
+    \caption{Real visibility vs LST for baseline (0,2).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{re_time_0_3.pdf}
+    \caption{Real visibility vs LST for baseline (0,3).}
+\end{figure}
+
+\paragraph{Physical Interpretation of Real Visibility vs LST}
+
+The real visibility for each baseline follows
+
+\[
+\mathrm{Re}(V)
+=
+|V|
+\cos(2\pi\nu\tau(t)),
+\]
+
+where the envelope $|V| \approx A_\nu(t)S_\nu$ is set by the primary beam and source spectrum, while the cosine term produces interferometric fringe oscillations.
+
+The $(0,1)$ and $(0,3)$ baselines both show clear oscillatory behaviour with a smooth beam-shaped envelope. This indicates that both baselines have significant projected components along the apparent source motion, producing nonzero geometric delays that evolve with time as the Earth rotates.
+
+In contrast, the north-south baseline $(0,2)$ shows a much smoother Gaussian-like curve with little visible oscillation. This implies that the projected baseline along the source trajectory is small, so the geometric delay remains close to zero during much of the observation. As a result, the visibility is dominated mainly by the beam response rather than rapid fringe evolution.
+
+These differences demonstrate that interferometric fringe structure depends primarily on the \emph{projected baseline geometry} relative to the source motion, rather than baseline length alone.
+
+% ==========================================================
+\subsubsection{Visibility Amplitude vs LST}
+
+The visibility amplitude is given approximately by
+
+\[
+|V| \approx A_\nu(t)\,S_\nu.
+\]
+
+The amplitude is therefore primarily controlled by the beam response and source brightness rather than the oscillatory fringe term.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{amp_time_0_1.pdf}
+    \caption{Visibility amplitude vs LST for baseline (0,1).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{amp_time_0_2.pdf}
+    \caption{Visibility amplitude vs LST for baseline (0,2).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{amp_time_0_3.pdf}
+    \caption{Visibility amplitude vs LST for baseline (0,3).}
+\end{figure}
+
+All baselines show similar smooth beam-crossing behaviour, with visibility amplitude peaking near source transit through boresight and decreasing away from beam center. Small differences arise from the different projected baseline geometries.
+
+\FloatBarrier
+
+% ==========================================================
+\subsubsection{Imaginary Component vs LST}
+
+The imaginary component follows
+
+\[
+\mathrm{Im}(V) = -|V|\sin(2\pi\nu\tau(t)).
+\]
+
+This corresponds to the quadrature component of the interferometric fringe pattern and is phase-shifted by $\pi/2$ relative to the real part.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{im_time_0_1.pdf}
+    \caption{Imaginary visibility vs LST for baseline (0,1).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{im_time_0_2.pdf}
+    \caption{Imaginary visibility vs LST for baseline (0,2).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{im_time_0_3.pdf}
+    \caption{Imaginary visibility vs LST for baseline (0,3).}
+\end{figure}
+
+The imaginary visibility exhibits sinusoidal oscillations similar to the real component but shifted in phase. Differences between baselines again arise from the changing geometric delay term.
+
+\FloatBarrier
+
+% ==========================================================
+\subsubsection{Visibility Phase vs LST}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{phase_time_0_1.pdf}
+    \caption{Visibility phase vs LST for baseline (0,1).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{phase_time_0_2.pdf}
+    \caption{Visibility phase vs LST for baseline (0,2).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{phase_time_0_3.pdf}
+    \caption{Visibility phase vs LST for baseline (0,3).}
+\end{figure}
+
+\paragraph{Physical Interpretation of Visibility Phase vs LST}
+
+The visibility phase evolves according to
+
+\[
+\phi(t) = -2\pi\nu\tau(t),
+\]
+
+where $\tau(t)$ is the geometric delay associated with the projected baseline.
+
+The baselines $(0,1)$ and $(0,3)$ exhibit approximately linear phase evolution with time. This indicates that the projected geometric delay changes smoothly and nearly linearly as the source drifts across the sky. Higher observing frequencies show steeper phase slopes because the phase scales directly with frequency.
+
+The two baselines appear similar because both contain significant projected components along the apparent source motion, producing comparable delay evolution during the drift scan.
+
+In contrast, the north-south baseline $(0,2)$ shows a curved phase structure rather than a nearly linear trend. This occurs because the projected baseline along the source trajectory remains small and changes nonlinearly during the observation. As a result, the geometric delay evolves more slowly and the phase variation is dominated by gradual curvature rather than rapid linear fringe rotation.
+
+Physically, these differences demonstrate that the visibility phase is highly sensitive to the projected baseline geometry. Baselines aligned with the source motion produce stronger and more linear phase evolution, while baselines with small projected delays exhibit weaker and more curved phase behaviour.
+
+\FloatBarrier
+
+% ==========================================================
+\subsection{Frequency-Domain Comparison}
+
+At fixed LST, the visibility becomes
+
+\[
+V(\nu) \approx A_\nu\,S_\nu\,e^{-i2\pi\nu\tau}.
+\]
+
+The source spectrum and chromatic beam response determine the amplitude structure, while the exponential fringe term produces oscillatory behaviour in frequency.
+
+% ==========================================================
+\subsubsection{Real Component vs Frequency}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{re_freq_0_1.pdf}
+    \caption{Real visibility vs frequency for baseline (0,1).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{re_freq_0_2.pdf}
+    \caption{Real visibility vs frequency for baseline (0,2).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{re_freq_0_3.pdf}
+    \caption{Real visibility vs frequency for baseline (0,3).}
+\end{figure}
+
+The real component oscillates with frequency because the fringe phase grows linearly with $\nu$. Different baselines exhibit different oscillation rates depending on the geometric delay.
+
+\FloatBarrier
+
+% ==========================================================
+\subsubsection{Visibility Amplitude vs Frequency}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{amp_freq_0_1.pdf}
+    \caption{Visibility amplitude vs frequency for baseline (0,1).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{amp_freq_0_2.pdf}
+    \caption{Visibility amplitude vs frequency for baseline (0,2).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{amp_freq_0_3.pdf}
+    \caption{Visibility amplitude vs frequency for baseline (0,3).}
+\end{figure}
+
+All baselines show a decreasing visibility amplitude toward higher frequencies due to the intrinsic source spectrum
+
+\[
+S_\nu \propto \nu^{-2.5}.
+\]
+
+Additional chromatic structure arises from the frequency-dependent Airy beam response.
+
+\FloatBarrier
+
+% ==========================================================
+\subsubsection{Imaginary Component vs Frequency}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{im_freq_0_1.pdf}
+    \caption{Imaginary visibility vs frequency for baseline (0,1).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{im_freq_0_2.pdf}
+    \caption{Imaginary visibility vs frequency for baseline (0,2).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{im_freq_0_3.pdf}
+    \caption{Imaginary visibility vs frequency for baseline (0,3).}
+\end{figure}
+
+The imaginary component exhibits sinusoidal modulation with frequency due to the geometric fringe term. Baselines with larger projected delays produce more rapid oscillations.
+
+\FloatBarrier
+
+% ==========================================================
+\subsubsection{Visibility Phase vs Frequency}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{phase_freq_0_1.pdf}
+    \caption{Visibility phase vs frequency for baseline (0,1).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{phase_freq_0_2.pdf}
+    \caption{Visibility phase vs frequency for baseline (0,2).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{phase_freq_0_3.pdf}
+    \caption{Visibility phase vs frequency for baseline (0,3).}
+\end{figure}
+
+The visibility phase varies approximately linearly with frequency according to
+
+\[
+\phi(\nu) = -2\pi\nu\tau.
+\]
+
+Different baselines produce different slopes because the geometric delay depends on baseline projection.
+
+\FloatBarrier
+
+% ==========================================================
+\subsection{Waterfall Comparison}
+
+Waterfall plots show the simultaneous dependence of visibility on both frequency and time.
+
+% ==========================================================
+\subsubsection{Real Waterfalls}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{re_waterfall_0_1.pdf}
+    \caption{Real visibility waterfall for baseline (0,1).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{re_waterfall_0_2.pdf}
+    \caption{Real visibility waterfall for baseline (0,2).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{re_waterfall_0_3.pdf}
+    \caption{Real visibility waterfall for baseline (0,3).}
+\end{figure}
+
+The oscillatory stripe structure arises from interferometric fringe evolution as both frequency and geometric delay vary.
+
+\FloatBarrier
+
+% ==========================================================
+\subsubsection{Amplitude Waterfalls}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{amp_waterfall_0_1.pdf}
+    \caption{Amplitude waterfall for baseline (0,1).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{amp_waterfall_0_2.pdf}
+    \caption{Amplitude waterfall for baseline (0,2).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{amp_waterfall_0_3.pdf}
+    \caption{Amplitude waterfall for baseline (0,3).}
+\end{figure}
+
+The amplitude waterfalls show strong chromatic evolution, with higher amplitudes concentrated at lower frequencies due to the steep source spectrum and beam attenuation.
+
+\FloatBarrier
+
+% ==========================================================
+\subsubsection{Imaginary Waterfalls}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{im_waterfall_0_1.pdf}
+    \caption{Imaginary visibility waterfall for baseline (0,1).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{im_waterfall_0_2.pdf}
+    \caption{Imaginary visibility waterfall for baseline (0,2).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{im_waterfall_0_3.pdf}
+    \caption{Imaginary visibility waterfall for baseline (0,3).}
+\end{figure}
+
+The imaginary waterfalls exhibit fringe oscillations complementary to the real component, reflecting the sine projection of the complex visibility.
+
+\FloatBarrier
+
+% ==========================================================
+\subsubsection{Phase Waterfalls}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{phase_waterfall_0_1.pdf}
+    \caption{Phase waterfall for baseline (0,1).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{phase_waterfall_0_2.pdf}
+    \caption{Phase waterfall for baseline (0,2).}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{phase_waterfall_0_3.pdf}
+    \caption{Phase waterfall for baseline (0,3).}
+\end{figure}
+
+The phase waterfalls reveal strong frequency-dependent phase evolution across the observation. While the phase is approximately linear in frequency locally, chromatic beam effects and wideband geometric evolution introduce curvature and complex structure across the full bandwidth.
+
+\FloatBarrier
+
+% ==========================================================
+\subsection{Comparison Between Baselines}
+
+The visibility behaviour differs between baselines because the geometric delay depends on the projected baseline vector,
+
+\[
+\tau(t)=\frac{\mathbf{b}\cdot\hat{\mathbf{n}}(t)}{c}.
+\]
+
+As the Earth rotates, different baseline orientations produce different projected delays and therefore different fringe behaviour.
+
+\begin{itemize}
+
+\item \textbf{Baseline $(0,1)$:}  
+Shows clear oscillatory fringes in the real and imaginary components together with a smooth beam envelope. The phase decreases approximately linearly with time.
+
+\item \textbf{Baseline $(0,2)$:}  
+Displays much weaker oscillatory structure and a smoother Gaussian-like envelope. The phase evolution is also noticeably curved rather than linear, indicating that the projected delay remains small during much of the observation.
+
+\item \textbf{Baseline $(0,3)$:}  
+Produces visibility behaviour very similar to baseline $(0,1)$. Both the fringe oscillations and phase evolution closely resemble each other, suggesting that the two baselines have similar projected components along the source trajectory despite their different physical orientations.
+
+\end{itemize}
+
+These results show that interferometric visibility structure depends primarily on the projected baseline geometry relative to the source direction, rather than only the physical baseline length. Baselines with similar projected delays can therefore produce very similar visibility patterns.
+
+\section{Conclusion}
+
+This project explored both optimization techniques and radio interferometric visibility analysis using simulated astronomical data. In Part I, linear and nonlinear least-squares methods were applied to noisy synthetic datasets in order to study parameter estimation, goodness-of-fit statistics, and convergence behaviour. The results showed that reduced chi-squared values near unity indicate statistical consistency between the model and data, but do not necessarily imply precise parameter recovery. Increasing noise levels increased parameter uncertainty, while nonlinear optimization methods were found to depend strongly on the choice of initial parameter guesses.
+
+In Part II, simulated interferometric visibilities generated with \texttt{hera\_sim} were analyzed in the time domain, frequency domain, and waterfall representations. The visibility structure was successfully interpreted using the simplified measurement equation
+
+\[
+V(\nu,t) \approx A_\nu(t)\,S_\nu\,e^{-i2\pi\nu\tau(t)},
+\]
+
+which separates the effects of the primary beam response, source spectrum, and geometric fringe phase.
+
+The comparison between baselines demonstrated that interferometric behaviour depends primarily on the projected baseline geometry relative to the source direction rather than baseline length alone. Baselines $(0,1)$ and $(0,3)$ exhibited very similar fringe and phase evolution because their projected delays evolved similarly during the drift scan, while the north-south baseline $(0,2)$ showed weaker fringe structure and more curved phase evolution due to its smaller projected delay.
+
+Overall, this project demonstrates how optimization methods and interferometric measurements are closely connected in radio astronomy. Optimization techniques provide the foundation for calibration and parameter estimation, while interferometric visibilities encode spatial and spectral information through geometric delay and Earth-rotation fringe evolution.
+\end{document}
